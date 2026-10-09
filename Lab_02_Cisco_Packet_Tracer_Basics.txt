@@ -1,0 +1,209 @@
+COMPUTER NETWORKS (CL3001) - LAB 02
+CISCO PACKET TRACER: TOPOLOGY, CABLING, IP CONFIGURATION AND SIMULATION
+Fall 2026 - Complete Study + Practical Notes
+
+============================================================
+1. INTRODUCTION TO CISCO PACKET TRACER
+============================================================
+Cisco Packet Tracer is a network simulator used to build topologies and observe protocols in:
+- Realtime mode
+- Simulation mode
+
+It can show protocols at several layers, including:
+Layer 2: Ethernet, PPP
+Layer 3: IP, ICMP, ARP
+Layer 4: TCP, UDP
+and routing protocols.
+
+============================================================
+2. BASIC WORKFLOW
+============================================================
+Step 1: Open Packet Tracer.
+Step 2: Choose devices from the device palette.
+Step 3: Place end devices such as PCs/laptops.
+Step 4: Place networking devices such as hubs and switches.
+Step 5: Connect devices with appropriate cables.
+Step 6: Configure IP addresses and masks.
+Step 7: Verify links turn green.
+Step 8: Test connectivity using ping or Simple PDU.
+Step 9: Use Simulation Mode to inspect packet flow.
+
+============================================================
+3. ADDING DEVICES
+============================================================
+Typical end devices:
+- PC
+- Laptop
+- Server
+
+Typical network devices:
+- Hub
+- 2960 switch
+- Router
+
+To add:
+Select category -> select device -> click workspace.
+
+============================================================
+4. CONNECTING DEVICES
+============================================================
+PC -> Hub/Switch:
+Use Copper Straight-Through in the lab.
+
+Hub -> Switch:
+Manual demonstrates crossover for like-device-style interconnection.
+
+General steps:
+1. Click Connections.
+2. Select cable type.
+3. Click first device and choose interface.
+4. Click second device and choose interface/port.
+
+Example PC-to-Switch:
+PC FastEthernet0 -> Switch FastEthernet0/1
+
+============================================================
+5. SWITCH PORT AMBER/GREEN - STP
+============================================================
+A newly connected switch port can be amber temporarily because Spanning Tree Protocol (STP) is transitioning the port before forwarding.
+After a short wait it should normally become green.
+
+If a PDU fails immediately after connecting a switch, wait until the port becomes green and try again.
+
+============================================================
+6. CONFIGURING STATIC IP ADDRESSES
+============================================================
+On a PC:
+PC -> Config -> FastEthernet0
+or
+PC -> Desktop -> IP Configuration
+
+Enter:
+- IPv4 address
+- Subnet mask
+- Default gateway (if a router is needed)
+- DNS server (if name resolution is needed)
+
+Manual-style example:
+PC0 IP: 172.16.1.10
+Mask: 255.255.0.0
+Gateway example: 172.16.1.1
+DNS example: 172.16.1.100
+
+A complete four-host practice example:
+PC0: 172.16.1.10 /16
+PC1: 172.16.1.11 /16
+PC2: 172.16.1.12 /16
+PC3: 172.16.1.13 /16
+
+Because these addresses are in the same /16 network, they can communicate through connected Layer-2 devices without a router.
+
+============================================================
+7. BANDWIDTH AND DUPLEX
+============================================================
+NIC/port settings can often be Auto.
+
+Bandwidth:
+- Fast Ethernet = 100 Mbps
+- Older Ethernet = 10 Mbps
+
+Duplex:
+- Half duplex: transmit or receive at one time; hubs normally operate this way.
+- Full duplex: transmit and receive simultaneously; common with switches.
+
+Auto-negotiation lets devices agree on suitable speed and duplex.
+
+============================================================
+8. REALTIME CONNECTIVITY TEST
+============================================================
+Method A - Command Prompt:
+PC -> Desktop -> Command Prompt
+
+Example:
+   ping 172.16.1.13
+
+Method B - Add Simple PDU:
+1. Ensure Realtime mode.
+2. Click Add Simple PDU (envelope icon).
+3. Click source device.
+4. Click destination device.
+5. Check Last Status.
+
+Successful = basic connectivity works.
+
+============================================================
+9. SIMULATION MODE
+============================================================
+Simulation Mode lets you inspect packets step-by-step.
+
+Basic process:
+1. Switch from Realtime to Simulation.
+2. Use Edit Filters to select relevant protocols, e.g. ARP and ICMP.
+3. Generate traffic using ping or Simple PDU.
+4. Click Capture/Forward.
+5. Click a packet/event to inspect OSI Model / PDU details.
+
+Typical ping behavior:
+- ARP may occur first to discover the destination MAC address.
+- ICMP Echo Request is sent.
+- Destination sends ICMP Echo Reply.
+
+This is why the first ping can occasionally fail or take longer while ARP information is learned.
+
+============================================================
+10. RESETTING THE SIMULATION/NETWORK
+============================================================
+Typical reset sequence from the manual:
+1. Delete PDUs/events.
+2. Power-cycle devices if necessary.
+3. Wait for switch STP ports to transition from amber to green.
+4. Run the test again.
+
+============================================================
+11. PRACTICAL EXAMPLE TO BUILD
+============================================================
+Topology:
+PC0 -- Hub0 -- Switch0 -- PC2
+PC1 -- Hub0             -- PC3
+
+Suggested IPs:
+PC0 172.16.1.10 /16
+PC1 172.16.1.11 /16
+PC2 172.16.1.12 /16
+PC3 172.16.1.13 /16
+
+Procedure:
+1. Add PCs, hub and switch.
+2. PC0/PC1 -> Hub using straight-through.
+3. PC2/PC3 -> Switch using straight-through.
+4. Hub -> Switch using the lab's specified crossover.
+5. Assign IPs.
+6. Wait until links are green.
+7. From PC0:
+   ping 172.16.1.13
+8. Use Simple PDU PC0 -> PC3.
+9. In Simulation Mode observe ARP/ICMP.
+
+============================================================
+12. TROUBLESHOOTING CHECKLIST
+============================================================
+If ping fails:
+- Are both devices powered on?
+- Is the cable connected to the correct ports?
+- Are link indicators green?
+- Are IPs unique?
+- Are source and destination in the intended subnet?
+- Is the subnet mask correct?
+- If crossing networks, is a router/default gateway configured?
+- If using a switch just connected, wait for STP.
+
+============================================================
+13. QUICK REVISION
+============================================================
+- Packet Tracer = network simulation tool.
+- Realtime = normal operation.
+- Simulation = step-by-step packet inspection.
+- Straight-through is commonly used PC-to-switch/hub.
+- Switch amber can be STP; wait for green.
+- Same subnet can communicate via Layer 2.
+- Different subnets require routing.

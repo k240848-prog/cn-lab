@@ -1,0 +1,280 @@
+COMPUTER NETWORKS (CL3001) - LAB 05
+SMTP/POP3 EMAIL, FTP FILE TRANSFER AND WIRESHARK
+Fall 2026 - Complete Study + Practical Notes
+
+============================================================
+1. EMAIL PROTOCOLS
+============================================================
+SMTP = Simple Mail Transfer Protocol
+- Used to SEND/relay email.
+- Runs over TCP.
+- Traditional server-to-server SMTP port: 25.
+
+POP3 = Post Office Protocol version 3
+- Used by a client to RECEIVE/retrieve email from a mail server.
+- Traditional port: TCP 110.
+
+Simple memory:
+SMTP = Send
+POP3 = Receive
+
+============================================================
+2. PACKET TRACER EMAIL SERVER CONFIGURATION
+============================================================
+1. Click Mail Server.
+2. Services -> EMAIL.
+3. Turn SMTP On.
+4. Turn POP3 On.
+5. Set domain, e.g. fast.com.
+6. Create users.
+
+Manual example users:
+cs  / 123
+ee  / 456
+bba / 789
+
+============================================================
+3. CLIENT EMAIL CONFIGURATION
+============================================================
+PC -> Desktop -> Email -> Configure Mail
+
+Example for CS account:
+Your Name: cs
+Email Address: cs@fast.com
+Incoming Mail Server: <mail-server-IP>
+Outgoing Mail Server: <mail-server-IP>
+User Name: cs
+Password: 123
+
+Example for BBA:
+Email Address: bba@fast.com
+Username: bba
+Password: 789
+Incoming/Outgoing: same mail-server IP
+
+Send example:
+From bba@fast.com
+To cs@fast.com
+Subject: Test
+Message: Hello CS
+
+Then on CS client click Receive.
+
+============================================================
+4. EMAIL TROUBLESHOOTING
+============================================================
+If "Connection timeout":
+1. Ping the mail server IP from the PC.
+2. Check PC default gateway.
+3. Check server default gateway.
+4. Ensure SMTP and POP3 are On.
+5. Check username/password/domain.
+6. Check incoming/outgoing server IP.
+
+If sending works but receiving fails:
+SMTP side may be working; check POP3, credentials and client-to-server reachability.
+
+============================================================
+5. EMAIL SIMULATION
+============================================================
+1. Switch to Simulation Mode.
+2. Edit Filters.
+3. Select SMTP and POP3.
+4. Send/receive email.
+5. Capture/Forward.
+6. Open events to inspect protocol/PDU details.
+
+Ports to remember:
+SMTP: 25
+POP3: 110
+
+============================================================
+6. FTP CONCEPT
+============================================================
+FTP = File Transfer Protocol.
+- Transfers files between client and server.
+- Uses TCP.
+- Control connection traditionally uses port 21.
+- Traditional active-mode data connection uses port 20 from server side.
+
+FTP can use active or passive data connection behavior.
+FTP credentials/data are not inherently protected like SSH-based transfer; secure alternatives include FTPS or SFTP.
+
+============================================================
+7. PACKET TRACER FTP SERVER CONFIGURATION
+============================================================
+Server -> Services -> FTP -> On
+
+Manual example:
+Username: Fast
+Password: 1234
+Permissions: Read, Write, List
+
+Optional permission lab example:
+Faculty account:
+Read = Yes
+Write = Yes
+List = Yes
+Delete = Yes
+Rename = Yes
+
+Student account:
+Read = Yes
+Write = Yes (if required)
+List = Yes
+Delete = No
+Rename = No
+
+This lets you demonstrate student delete failure and faculty delete success.
+
+============================================================
+8. CONNECT TO FTP SERVER
+============================================================
+On PC:
+Desktop -> Command Prompt
+
+Command:
+ftp <server-IP>
+
+Example:
+ftp 10.0.0.2
+
+Then enter:
+Username: Fast
+Password: 1234
+
+Successful login shows an ftp> prompt.
+
+============================================================
+9. CREATE AND UPLOAD A FILE
+============================================================
+Packet Tracer method:
+PC -> Desktop -> Text Editor
+Create/save a file named:
+test.bin
+
+Then connect via FTP and run:
+put test.bin
+
+Meaning:
+put = upload local PC file to FTP server.
+
+List server files:
+dir
+
+============================================================
+10. VERIFY/DOWNLOAD FROM ANOTHER PC
+============================================================
+On second PC:
+ftp <server-IP>
+login
+
+dir
+
+If test.bin is listed, the upload exists.
+
+To download it to the second PC:
+get test.bin
+
+Then:
+quit
+
+Open PC -> Desktop -> Text Editor and open test.bin to read it.
+
+Memory:
+put = PC -> Server
+get = Server -> PC
+dir = list server files
+
+============================================================
+11. DELETE PERMISSION EXAMPLE
+============================================================
+Student login:
+delete test.bin
+Expected: fail if Delete permission is not granted.
+
+Faculty login:
+delete test.bin
+Expected: success if Delete permission is granted.
+
+============================================================
+12. FTP SIMULATION MODE
+============================================================
+1. Enter Simulation Mode.
+2. Edit Filters -> FTP.
+3. From PC run ftp <server-IP>.
+4. Capture/Forward.
+5. Inspect FTP login/control packets.
+
+Port to remember:
+FTP control = TCP 21
+
+============================================================
+13. WIRESHARK INTRODUCTION
+============================================================
+Wireshark is a packet analyzer used for:
+- Network troubleshooting
+- Protocol analysis
+- Education
+- Investigating network conversations
+
+Basic workflow:
+1. Open Wireshark.
+2. Choose the network interface.
+3. Start capture.
+4. Generate traffic.
+5. Apply a display filter.
+
+Example filter:
+tcp
+
+This displays TCP packets only.
+
+Useful safe practice filters:
+http
+ tcp
+ dns
+
+============================================================
+14. HTTP PACKET ANALYSIS IDEA
+============================================================
+When analyzing HTTP traffic, you can inspect:
+- Source/destination IP
+- Source/destination port
+- TCP handshake
+- HTTP method such as GET/POST
+- HTTP headers
+- Response codes
+
+HTTP is not encrypted; HTTPS encrypts application data using TLS, so packet contents are not readable in the same way.
+
+============================================================
+15. COMPLETE FTP PRACTICE FLOW
+============================================================
+1. Server -> FTP On.
+2. Add Fast / 1234 with Read + Write + List.
+3. PC1 -> Text Editor -> create test.bin.
+4. PC1 Command Prompt:
+   ftp 10.0.0.2
+   login Fast / 1234
+   put test.bin
+   dir
+5. PC2 Command Prompt:
+   ftp 10.0.0.2
+   login
+   dir
+   get test.bin
+   quit
+6. Open downloaded test.bin in Text Editor.
+7. Simulation Mode -> FTP filter -> Capture/Forward.
+
+============================================================
+16. QUICK REVISION
+============================================================
+SMTP = email sending = port 25
+POP3 = email retrieval = port 110
+FTP = file transfer = control port 21
+put = upload
+get = download
+dir = list files
+Wireshark = packet analyzer

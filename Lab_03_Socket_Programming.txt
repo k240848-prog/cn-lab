@@ -1,0 +1,313 @@
+COMPUTER NETWORKS (CL3001) - LAB 03
+SOCKET PROGRAMMING IN PYTHON
+Fall 2026 - Complete Study + Practical Notes
+
+============================================================
+1. WHAT IS SOCKET PROGRAMMING?
+============================================================
+A socket is an endpoint of a communication channel. Sockets allow processes to exchange data over a network or on the same computer.
+
+Most network socket programs use a client-server model:
+- Server waits/listens for incoming connections.
+- Client actively connects to the server.
+- After connection, both sides can send and receive data.
+
+Common socket transports:
+- TCP: Connection-oriented and reliable.
+- UDP: Connectionless, faster/lower overhead, but delivery is not guaranteed.
+
+============================================================
+2. TCP VS UDP
+============================================================
+TCP:
+- socket.SOCK_STREAM
+- Connection-oriented
+- Reliable, ordered delivery
+- Uses connect/listen/accept
+- Example uses: web, email, file transfer, SSH
+
+UDP:
+- socket.SOCK_DGRAM
+- Connectionless
+- No connection handshake
+- May lose/reorder packets
+- Uses sendto/recvfrom
+- Example uses: DNS queries, streaming/real-time cases
+
+============================================================
+3. IMPORTANT SOCKET TERMS
+============================================================
+Domain / Address Family:
+AF_INET = IPv4 Internet sockets.
+
+Type:
+SOCK_STREAM = TCP
+SOCK_DGRAM = UDP
+
+Protocol:
+Normally omitted or 0.
+
+Hostname:
+A name such as localhost or a domain name.
+
+Port:
+Identifies the application endpoint on a host.
+
+Basic socket creation:
+
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+============================================================
+4. SERVER AND CLIENT METHODS
+============================================================
+Server-side methods:
+- bind((host, port)) : attaches socket to an address/port.
+- listen(n)          : starts listening. n is backlog (queued pending connections).
+- accept()           : waits for a client; returns connection socket + client address.
+
+Client-side:
+- connect((host, port)) : initiates connection to server.
+
+General:
+- send() / sendall() : send TCP data.
+- recv()             : receive TCP data.
+- sendto()           : send UDP datagram.
+- recvfrom()         : receive UDP datagram.
+- close()            : close socket.
+
+listen(1) explanation:
+The 1 is the backlog value: roughly how many pending client connection requests may wait in the queue. It does NOT mean the server can only ever serve one client in its whole lifetime.
+
+============================================================
+5. HOST/IP FUNCTIONS - EXAMPLES
+============================================================
+A. Get current computer hostname:
+
+import socket
+print(socket.gethostname())
+
+B. Get IP of current host:
+
+import socket
+hostname = socket.gethostname()
+ip = socket.gethostbyname(hostname)
+print("Hostname:", hostname)
+print("IP:", ip)
+
+C. Get IP of another hostname/domain:
+
+import socket
+print(socket.gethostbyname("example.com"))
+
+D. gethostbyname vs gethostbyaddr
+
+gethostbyname(name):
+Name -> IP
+Example:
+print(socket.gethostbyname("localhost"))
+
+gethostbyaddr(ip):
+IP -> hostname information (reverse lookup)
+Example:
+print(socket.gethostbyaddr("127.0.0.1"))
+
+E. Get service name from port:
+
+import socket
+print(socket.getservbyport(80, "tcp"))   # http
+print(socket.getservbyport(21, "tcp"))   # ftp
+
+============================================================
+6. SIMPLE PORT SCANNER EXAMPLE
+============================================================
+Use only against systems you own or are authorized to test.
+
+import socket
+
+target = "127.0.0.1"
+
+for port in range(1, 101):
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(0.2)
+    result = s.connect_ex((target, port))
+    if result == 0:
+        print("Open port:", port)
+    s.close()
+
+Meaning:
+connect_ex() returns 0 when the connection succeeds.
+
+============================================================
+7. SIMPLE TCP SERVER - READY EXAMPLE
+============================================================
+# server.py
+import socket
+
+HOST = "0.0.0.0"
+PORT = 5000
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((HOST, PORT))
+server.listen(1)
+
+print("Server listening on port", PORT)
+
+conn, addr = server.accept()
+print("Connected by", addr)
+
+message = conn.recv(1024).decode()
+print("Client says:", message)
+
+reply = input("Enter reply: ")
+conn.sendall(reply.encode())
+
+conn.close()
+server.close()
+
+============================================================
+8. SIMPLE TCP CLIENT - READY EXAMPLE
+============================================================
+# client.py
+import socket
+
+SERVER_IP = "127.0.0.1"   # use actual server IP for different computers
+PORT = 5000
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((SERVER_IP, PORT))
+
+message = input("Enter message: ")
+client.sendall(message.encode())
+
+reply = client.recv(1024).decode()
+print("Server replied:", reply)
+
+client.close()
+
+Execution:
+1. Run server.py first.
+2. Run client.py.
+3. Client connects to server on PORT 5000.
+4. Client sends text.
+5. Server receives and replies.
+
+Same PC:
+SERVER_IP = 127.0.0.1
+
+Different PCs:
+SERVER_IP = actual IPv4 address of server PC, e.g. 192.168.1.10
+Firewall must allow the port.
+
+============================================================
+9. CONTINUOUS TCP SERVER EXAMPLE
+============================================================
+A server can keep accepting clients until manually stopped:
+
+import socket
+
+HOST = "0.0.0.0"
+PORT = 5000
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((HOST, PORT))
+server.listen(5)
+
+print("Server running...")
+
+while True:
+    conn, addr = server.accept()
+    data = conn.recv(1024).decode()
+    print("Received from", addr, ":", data)
+    conn.sendall("Message received".encode())
+    conn.close()
+
+============================================================
+10. EXAM-STYLE EXAMPLE: UNIQUE SEAT NUMBER SERVER
+============================================================
+Problem idea:
+A student sends a roll number. The TCP server generates a unique seat number 1-50, sends it back, prints roll + seat, and keeps running.
+
+# seat_server.py
+import socket
+import random
+
+HOST = "0.0.0.0"
+PORT = 5000
+assigned_seats = set()
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((HOST, PORT))
+server.listen(5)
+
+print("Seat server running...")
+
+while True:
+    conn, addr = server.accept()
+    roll_no = conn.recv(1024).decode().strip()
+
+    if len(assigned_seats) >= 50:
+        conn.sendall("No seats available".encode())
+        conn.close()
+        continue
+
+    while True:
+        seat = random.randint(1, 50)
+        if seat not in assigned_seats:
+            assigned_seats.add(seat)
+            break
+
+    conn.sendall(str(seat).encode())
+    print("Roll Number:", roll_no, "Assigned Seat:", seat)
+    conn.close()
+
+# seat_client.py
+import socket
+
+SERVER_IP = "127.0.0.1"
+PORT = 5000
+
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((SERVER_IP, PORT))
+
+roll = input("Enter roll number: ")
+client.sendall(roll.encode())
+
+seat = client.recv(1024).decode()
+print("Assigned seat:", seat)
+client.close()
+
+============================================================
+11. COMMON ERRORS
+============================================================
+ConnectionRefusedError:
+- Server not running.
+- Wrong IP/port.
+- Firewall blocking.
+
+Address already in use:
+- Another program/process already uses the port.
+- Previous server may still be running.
+
+Client hangs:
+- Server is waiting for recv while client is also waiting for recv.
+- Check send/receive order.
+
+Wrong IP:
+- 127.0.0.1 works only on the same computer.
+- For another PC, use the server PC's actual LAN IP.
+
+============================================================
+12. QUICK REVISION
+============================================================
+TCP server sequence:
+socket -> bind -> listen -> accept -> recv/send -> close
+
+TCP client sequence:
+socket -> connect -> send/recv -> close
+
+Key functions:
+gethostname = current host name
+gethostbyname = name to IP
+gethostbyaddr = IP to name info
+getservbyport = port to standard service name

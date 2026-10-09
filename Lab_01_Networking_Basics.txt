@@ -1,0 +1,233 @@
+COMPUTER NETWORKS (CL3001) - LAB 01
+NETWORKING BASICS, TERMINOLOGY, OSI MODEL, COMMANDS AND IP BASICS
+Fall 2026 - Complete Study + Practical Notes
+
+============================================================
+1. WHAT IS A COMPUTER NETWORK?
+============================================================
+A network is a group of interconnected devices or systems.
+A computer network is a set of computers, servers, switches, routers and other devices that communicate and share data/resources through wired or wireless links.
+
+Common network sizes:
+- LAN (Local Area Network): Small area, e.g. lab, office, home.
+- MAN (Metropolitan Area Network): Covers a city/metropolitan area.
+- WAN (Wide Area Network): Covers a large geographic area; the Internet is the biggest example.
+
+Example:
+PC1 and PC2 connected to the same switch in a lab form a LAN.
+
+============================================================
+2. HOST AND TOPOLOGY
+============================================================
+Host:
+Any end device that participates in a network, such as a PC, laptop, phone, printer or server. A host normally has an IP address.
+
+Topology:
+The physical/logical arrangement of devices and links in a network.
+
+Main topologies:
+- Bus: All devices share one backbone cable.
+- Ring: Devices form a circular path.
+- Star: All devices connect to a central switch/hub. Very common in LANs.
+- Tree: Hierarchical arrangement of star networks.
+- Mesh: Devices have multiple paths to one another; high redundancy.
+
+============================================================
+3. RJ45 CONNECTOR
+============================================================
+RJ45 is an 8-position connector commonly used with Ethernet twisted-pair cables.
+Two common wiring standards:
+- T568A
+- T568B
+
+A straight-through cable normally has the same standard on both ends.
+A crossover cable traditionally uses different wiring arrangements at the two ends.
+
+============================================================
+4. TYPES OF ETHERNET CABLES
+============================================================
+A. STRAIGHT-THROUGH CABLE
+Traditionally used between different types of devices.
+Examples:
+- PC -> Switch
+- PC -> Hub
+- Router -> Switch (modern devices may auto-correct)
+- Router WAN -> Modem LAN
+
+B. CROSSOVER CABLE
+Traditionally used between similar device types.
+Examples:
+- PC -> PC
+- Switch -> Switch
+- Hub -> Hub
+
+Important modern note:
+Many current devices support Auto-MDI/MDI-X, so they automatically detect the cable arrangement. In Packet Tracer labs, follow the cable type requested by the lab/manual.
+
+============================================================
+5. IMPORTANT NETWORK TERMINOLOGY
+============================================================
+NIC:
+Network Interface Card. Hardware interface used to connect a host to a network.
+
+MAC Address:
+Layer-2 physical address of a network interface.
+Example: 00:C0:9F:9B:D5:46
+
+Hub:
+Simple Layer-1 device. Repeats incoming traffic to all ports. It does not intelligently learn destination devices.
+
+Switch:
+Primarily a Layer-2 device. Learns MAC addresses and forwards frames toward the appropriate port.
+
+Router:
+Layer-3 device. Connects different IP networks and forwards packets according to destination IP/routing table.
+
+IP Address:
+Logical network address. IPv4 example: 192.168.1.10
+
+Port Number:
+Identifies an application/service on a host.
+Examples:
+- HTTP: 80
+- HTTPS: 443
+- FTP: 21
+- SSH: 22
+- Telnet: 23
+- SMTP: 25
+- POP3: 110
+
+Default Gateway:
+The router interface in the SAME subnet as the host. A host sends traffic for other networks to its default gateway.
+
+Example:
+Network: 192.168.1.0/24
+Router interface: 192.168.1.1
+PC: 192.168.1.10
+PC default gateway: 192.168.1.1
+
+Domain Name:
+Human-readable name that can map to an IP address.
+Example: apexbank.com -> 192.168.8.15
+
+DNS Server:
+Resolves names into IP addresses.
+If the DNS service runs on server 192.168.8.15, clients use:
+DNS Server = 192.168.8.15
+
+DHCP:
+Dynamic Host Configuration Protocol. Automatically assigns IP configuration such as IP address, subnet mask, default gateway and DNS server.
+
+============================================================
+6. OSI MODEL - 7 LAYERS
+============================================================
+7. Application   - User/network services: HTTP, FTP, SMTP, DNS, SSH
+6. Presentation  - Data format, encoding, encryption, compression
+5. Session       - Starts/manages/ends sessions
+4. Transport     - TCP/UDP, ports, reliability, segmentation
+3. Network       - IP addressing and routing; routers
+2. Data Link     - Frames, MAC addresses, switches
+1. Physical      - Bits, cables, connectors, signals
+
+Easy memory order (top to bottom):
+Application, Presentation, Session, Transport, Network, Data Link, Physical.
+
+============================================================
+7. WINDOWS AND LINUX NETWORK COMMANDS
+============================================================
+Windows               Linux                 Purpose
+------------------------------------------------------------
+ipconfig              ifconfig / ip addr    Show IP configuration
+hostname              hostname              Show computer hostname
+nslookup              nslookup              Query DNS/name resolution
+ping                  ping                  Test reachability
+tracert               traceroute            Trace route/hops
+netstat               netstat               Connections, ports, routing info
+
+WINDOWS EXAMPLES
+
+1) Show basic IP configuration:
+   ipconfig
+
+2) Show detailed IP, gateway, DNS, MAC info:
+   ipconfig /all
+
+3) Show hostname:
+   hostname
+
+4) DNS lookup:
+   nslookup google.com
+   nslookup apexbank.com
+
+5) Ping an IP:
+   ping 192.168.1.1
+
+6) Ping a hostname:
+   ping apexbank.com
+
+7) Trace path:
+   tracert 8.8.8.8
+
+8) Show listening/active ports:
+   netstat -an
+
+9) Show connections plus process IDs:
+   netstat -ano
+
+How to remember:
+- ipconfig = What is my IP?
+- hostname = What is my computer name?
+- nslookup = What IP belongs to this name?
+- ping = Can I reach it?
+- tracert = Which path/hops do I take?
+- netstat = Which ports/connections are active?
+
+============================================================
+8. IPv4 AND SUBNET MASK BASICS
+============================================================
+IPv4 uses four decimal octets, e.g. 192.168.1.10.
+A subnet mask separates network and host portions.
+
+Common /24 example:
+IP: 192.168.1.10
+Mask: 255.255.255.0 (/24)
+Network: 192.168.1.0
+Usable host range: 192.168.1.1 to 192.168.1.254
+Broadcast: 192.168.1.255
+
+Traditional classful defaults:
+Class A: 1-126 first octet, default /8 (255.0.0.0)
+Class B: 128-191, default /16 (255.255.0.0)
+Class C: 192-223, default /24 (255.255.255.0)
+
+Modern networks normally use CIDR rather than relying on classful addressing.
+
+============================================================
+9. GENERAL EXAMPLE
+============================================================
+Suppose a small LAN contains:
+Router: 192.168.1.1/24
+DNS server: 192.168.1.5/24
+PC1: 192.168.1.10/24
+PC2: 192.168.1.11/24
+
+For PC1:
+IP Address: 192.168.1.10
+Subnet Mask: 255.255.255.0
+Default Gateway: 192.168.1.1
+DNS Server: 192.168.1.5
+
+The default gateway is NOT normally the PC's own IP. It is the router interface.
+The DNS server address is the IP of the machine providing DNS service.
+
+============================================================
+10. QUICK REVISION
+============================================================
+- Switch connects devices inside a LAN.
+- Router connects different IP networks.
+- Default gateway = router interface in your subnet.
+- DNS server = server that resolves names.
+- DHCP can automatically give IP, mask, gateway and DNS.
+- Straight-through: traditionally different device types.
+- Crossover: traditionally same device types.
+- ping tests reachability; nslookup tests DNS; tracert shows path.

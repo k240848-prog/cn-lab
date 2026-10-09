@@ -1,0 +1,310 @@
+COMPUTER NETWORKS (CL3001) - LAB 04
+ROUTER, HTTP/HTTPS, HTTP ERRORS AND DNS IN CISCO PACKET TRACER
+Fall 2026 - Complete Study + Practical Notes
+
+============================================================
+1. ROUTER BASICS
+============================================================
+A router is a Layer-3 device that connects different IP networks and forwards packets between them.
+
+Basic router process:
+1. Packet arrives on an interface.
+2. Router reads destination IP.
+3. Router checks routing table.
+4. Router chooses best route/next hop.
+5. Router forwards the packet.
+
+Main router functions:
+- Path determination
+- Packet forwarding
+- Network segmentation
+- Traffic filtering with ACLs
+
+============================================================
+2. DEFAULT GATEWAY RULE
+============================================================
+For each host, the default gateway is the router interface that belongs to the SAME subnet as that host.
+
+Example with two networks:
+Left network: 192.168.1.0/24
+Router left interface: 192.168.1.254
+
+Right network: 192.168.2.0/24
+Router right interface: 192.168.2.254
+
+Left PC:
+IP: 192.168.1.10
+Mask: 255.255.255.0
+Gateway: 192.168.1.254
+
+Right Server:
+IP: 192.168.2.1
+Mask: 255.255.255.0
+Gateway: 192.168.2.254
+
+Important:
+- The device IP and gateway are not normally the same.
+- Router interface must be in the same subnet as the connected network.
+- Every IP on a subnet must be unique.
+
+============================================================
+3. ROUTER CLI CONFIGURATION EXAMPLE
+============================================================
+For a router with two Gigabit interfaces:
+
+enable
+configure terminal
+
+interface gigabitEthernet 0/0
+ip address 192.168.1.254 255.255.255.0
+no shutdown
+exit
+
+interface gigabitEthernet 0/1
+ip address 192.168.2.254 255.255.255.0
+no shutdown
+exit
+
+end
+show ip interface brief
+
+Expected relevant interfaces should be up/up.
+
+If networks are directly connected to the same router, the router already knows those connected networks; no static route is required just to route between them.
+
+============================================================
+4. HTTP
+============================================================
+HTTP = Hypertext Transfer Protocol.
+- Used by web clients/browsers and web servers.
+- Default port: TCP 80.
+- URL normally starts with http://
+- Plain HTTP does not provide transport encryption.
+
+Packet Tracer web server:
+Server -> Services -> HTTP -> On
+Edit index.html if required.
+
+Simple example page:
+
+<html>
+<head><title>FAST Web</title></head>
+<body>
+<h1>Welcome</h1>
+<p>Internal web server is working.</p>
+</body>
+</html>
+
+Client test:
+PC -> Desktop -> Web Browser
+http://192.168.2.1
+
+============================================================
+5. HTTPS
+============================================================
+HTTPS = HTTP protected using TLS.
+- Default port: TCP 443.
+- URL starts with https://
+- Encrypts web traffic and supports server authentication using certificates.
+
+Packet Tracer:
+Server -> Services -> HTTP -> HTTPS On
+Client browser:
+https://192.168.2.1
+
+============================================================
+6. HTTP VS HTTPS
+============================================================
+HTTP:
+- Port 80
+- http://
+- No TLS encryption
+- No TLS certificate requirement
+
+HTTPS:
+- Port 443
+- https://
+- TLS encryption
+- Certificate-based authentication is normally involved
+
+============================================================
+7. COMMON 4xx CLIENT ERRORS
+============================================================
+400 Bad Request:
+Request syntax/message is invalid.
+
+401 Unauthorized:
+Authentication required or failed.
+
+403 Forbidden:
+Server understood request but refuses access.
+
+404 Not Found:
+Requested resource/page does not exist.
+
+408 Request Timeout:
+Server timed out waiting for the client's request.
+
+============================================================
+8. COMMON 5xx SERVER ERRORS
+============================================================
+500 Internal Server Error:
+Generic server-side failure.
+
+501 Not Implemented:
+Server does not support the requested method/function.
+
+502 Bad Gateway:
+Gateway/proxy received invalid response from upstream server.
+
+503 Service Unavailable:
+Server temporarily unavailable, overloaded or under maintenance.
+
+============================================================
+9. HTTP/HTTPS SIMULATION IN PACKET TRACER
+============================================================
+HTTP:
+1. Enable HTTP on server.
+2. Open PC Web Browser.
+3. Enter server IP.
+4. Switch to Simulation Mode.
+5. Edit Filters -> select HTTP.
+6. Capture/Forward.
+7. Inspect packet/PDU details.
+8. Observe destination port 80.
+
+HTTPS:
+Repeat with HTTPS filter and an https:// URL.
+Observe destination port 443.
+
+============================================================
+10. DNS CONCEPT
+============================================================
+DNS = Domain Name System.
+It converts human-readable names into IP addresses.
+
+Instead of:
+http://192.168.2.1
+
+A user can access:
+http://fast
+or
+http://apexbank.com
+
+provided DNS is correctly configured.
+
+============================================================
+11. DNS RECORD TYPES
+============================================================
+A Record:
+Maps a host/domain name directly to an IPv4 address.
+Example:
+fast -> 192.168.2.1
+
+CNAME Record:
+Creates an alias pointing to another hostname/canonical name.
+Conceptual example:
+bank -> fast
+then fast -> 192.168.2.1 through an A record.
+
+NS Record:
+Identifies authoritative DNS server(s) for a zone.
+
+SOA Record:
+Start of Authority; stores administrative/zone information.
+
+============================================================
+12. DNS SERVER CONFIGURATION IN PACKET TRACER
+============================================================
+Suppose the right-side server is BOTH web server and DNS server:
+Server IP: 192.168.2.1
+Gateway: 192.168.2.254
+
+Server -> Services -> DNS -> On
+Add:
+Name: fast
+Type: A Record
+Address: 192.168.2.1
+
+Then all clients that need to resolve "fast" must know where the DNS server is.
+Client DNS Server field:
+192.168.2.1
+
+If DHCP is used, set in the DHCP pool:
+DNS Server: 192.168.2.1
+
+Then test:
+ping fast
+
+Expected resolution:
+Pinging fast [192.168.2.1] ...
+
+Browser:
+http://fast
+
+============================================================
+13. IMPORTANT DNS DISTINCTION
+============================================================
+A-record ADDRESS = IP of the actual host/service the name should reach.
+Client DNS Server = IP of the machine running DNS service.
+
+Example when DNS and web are different:
+DNS server: 192.168.1.5
+Web server: 192.168.2.10
+
+A record on DNS server:
+Name: bank
+Address: 192.168.2.10
+
+Every client:
+DNS Server: 192.168.1.5
+
+Example when same machine provides DNS + web:
+DNS/Web server IP: 192.168.2.1
+A record: fast -> 192.168.2.1
+Client DNS Server: 192.168.2.1
+
+============================================================
+14. DNS TROUBLESHOOTING
+============================================================
+"Host Name Unresolved":
+- Client DNS field is 0.0.0.0/wrong.
+- DNS service is Off.
+- Record name does not match what user typed.
+- DNS server is unreachable.
+
+If IP works but name fails:
+HTTP/routing are probably working; check DNS.
+
+Tests:
+1. ping 192.168.2.1
+2. ping fast
+3. Web Browser -> http://fast
+
+============================================================
+15. COMPLETE TWO-NETWORK EXAMPLE
+============================================================
+LEFT:
+Network: 192.168.1.0/24
+Router: 192.168.1.254
+PC: 192.168.1.10
+PC Gateway: 192.168.1.254
+PC DNS: 192.168.2.1
+
+RIGHT:
+Network: 192.168.2.0/24
+Router: 192.168.2.254
+DNS/Web Server: 192.168.2.1
+Server Gateway: 192.168.2.254
+
+DNS record:
+fast -> 192.168.2.1
+
+Tests from left PC:
+ping 192.168.1.254
+ping 192.168.2.254
+ping 192.168.2.1
+ping fast
+Browser -> http://fast
+
+If all work, router + DNS + HTTP are working across subnets.

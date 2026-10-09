@@ -1,0 +1,323 @@
+COMPUTER NETWORKS (CL3001) - LAB 06
+TELNET AND SSH REMOTE CLI ACCESS IN CISCO PACKET TRACER
+Fall 2026 - Complete Study + Practical Notes
+
+============================================================
+1. TELNET CONCEPT
+============================================================
+Telnet allows a user to remotely access the CLI of a network device over TCP/IP.
+Traditional Telnet port: TCP 23.
+
+Major weakness:
+Telnet does not encrypt the session, so credentials/commands can be exposed on the network.
+
+============================================================
+2. SWITCH MANAGEMENT IP
+============================================================
+A Layer-2 switch needs a management IP (commonly on VLAN 1 in a simple lab) so you can remotely reach it.
+
+Example left network:
+PCs: 192.168.1.x/24
+Router interface: 192.168.1.254
+Switch management IP: 192.168.1.10
+
+Configure on the SWITCH CLI:
+
+enable
+configure terminal
+interface vlan 1
+ip address 192.168.1.10 255.255.255.0
+no shutdown
+exit
+
+If you want the switch manageable from OTHER subnets, configure its default gateway:
+
+ip default-gateway 192.168.1.254
+
+Important:
+- 192.168.1.10 must be unique.
+- Management IP is the switch's target IP for Telnet/SSH.
+- The switch default gateway is the router interface in the switch's subnet.
+
+============================================================
+3. WHAT DOES "line vty" DO?
+============================================================
+VTY = Virtual Teletype lines used for remote CLI sessions such as Telnet and SSH.
+
+line vty 0 15
+means configure virtual terminal lines 0 through 15.
+
+Console line = local physical console access.
+VTY line = remote network access.
+
+============================================================
+4. TELNET CONFIGURATION - COMPLETE
+============================================================
+On the switch:
+
+enable
+configure terminal
+
+interface vlan 1
+ip address 192.168.1.10 255.255.255.0
+no shutdown
+exit
+
+line vty 0 15
+password cisco
+login
+transport input telnet
+exit
+
+enable secret class
+ip default-gateway 192.168.1.254
+end
+
+Meaning:
+password cisco = Telnet/VTY login password.
+login = tells VTY to require the configured line password.
+transport input telnet = permits Telnet on VTY lines.
+enable secret class = password to move from Switch> to Switch#.
+
+============================================================
+5. TEST TELNET FROM A PC
+============================================================
+First:
+ping 192.168.1.10
+
+Then:
+telnet 192.168.1.10
+
+VTY password:
+cisco
+
+After login:
+Switch>
+
+To enter privileged EXEC:
+enable
+Password: class
+
+Prompt becomes:
+Switch#
+
+Then configuration mode:
+configure terminal
+Switch(config)#
+
+============================================================
+6. CAN A PC ON ANOTHER NETWORK TELNET THE SWITCH?
+============================================================
+Yes, if routing works and the switch has a correct default gateway.
+
+Example:
+Left switch management IP: 192.168.1.10
+Right PC: 192.168.2.10
+Router left: 192.168.1.254
+Router right: 192.168.2.254
+
+Left switch:
+ip default-gateway 192.168.1.254
+
+Right PC gateway:
+192.168.2.254
+
+Then from right PC:
+telnet 192.168.1.10
+
+============================================================
+7. DIFFERENT SWITCHES NEED DIFFERENT MANAGEMENT IPs
+============================================================
+If there are two switches:
+Left switch: 192.168.1.10
+Right switch: 192.168.2.10
+
+To access left:
+telnet 192.168.1.10
+
+To access right:
+telnet 192.168.2.10
+
+Each switch must have its own management IP and remote-access configuration.
+
+============================================================
+8. SSH CONCEPT
+============================================================
+SSH = Secure Shell.
+Traditional SSH port: TCP 22.
+
+SSH provides encrypted remote CLI access and is preferred over Telnet.
+It can use password authentication and cryptographic keys.
+
+Telnet vs SSH:
+Telnet: port 23, unencrypted
+SSH: port 22, encrypted
+
+============================================================
+9. SSH REQUIREMENTS ON A CISCO SWITCH
+============================================================
+SSH configuration normally needs:
+- Management IP/reachability
+- Hostname
+- Domain name
+- RSA key pair
+- SSH version 2
+- Local username/password (secret)
+- VTY configured for SSH
+- login local
+
+============================================================
+10. SSH CONFIGURATION - COMPLETE COMMANDS
+============================================================
+Assume switch management IP should be 192.168.1.5/24 and router is 192.168.1.254.
+
+On switch:
+
+enable
+configure terminal
+
+interface vlan 1
+ip address 192.168.1.5 255.255.255.0
+no shutdown
+exit
+
+ip default-gateway 192.168.1.254
+
+hostname lab01
+ip domain-name fast-cn
+
+username CS-FAST secret abc
+
+crypto key generate rsa
+
+When asked modulus size, enter:
+1024
+
+Then:
+ip ssh version 2
+
+line vty 0 15
+login local
+transport input ssh
+exit
+
+end
+
+============================================================
+11. WHAT EACH SSH COMMAND DOES
+============================================================
+hostname lab01
+Gives device a hostname. Hostname + domain name are used during RSA key generation.
+
+ip domain-name fast-cn
+Sets domain name required for RSA key generation.
+
+crypto key generate rsa
+Generates RSA keys used by SSH.
+
+1024
+Key modulus size used in this lab example.
+
+ip ssh version 2
+Forces SSH version 2.
+
+username CS-FAST secret abc
+Creates local user CS-FAST with encrypted/hashed secret abc in the Cisco configuration.
+
+line vty 0 15
+Selects remote terminal lines.
+
+login local
+Use the local username database instead of a single VTY line password.
+
+transport input ssh
+Allow SSH on VTY lines; Telnet is not accepted on those lines.
+
+============================================================
+12. TEST SSH FROM PC
+============================================================
+First test:
+ping 192.168.1.5
+
+Then:
+ssh -l CS-FAST 192.168.1.5
+
+Password:
+abc
+
+If successful you should reach:
+lab01>
+
+If enable mode is required and an enable secret exists:
+enable
+<enter enable-secret password>
+
+============================================================
+13. TARGET IP RULE FOR SSH/TELNET
+============================================================
+The IP typed in the client command is the IP of the DEVICE YOU WANT TO ACCESS.
+
+Switch SSH:
+ssh -l CS-FAST <switch-management-IP>
+
+Router SSH:
+ssh -l username <reachable-router-interface-IP>
+
+Example:
+Switch VLAN1 = 192.168.1.5
+Then:
+ssh -l CS-FAST 192.168.1.5
+
+It is NOT automatically the router IP.
+
+============================================================
+14. TELNET VS SSH CONFIG COMPARISON
+============================================================
+TELNET:
+line vty 0 15
+password cisco
+login
+transport input telnet
+
+SSH:
+hostname lab01
+ip domain-name fast-cn
+crypto key generate rsa
+ip ssh version 2
+username CS-FAST secret abc
+line vty 0 15
+login local
+transport input ssh
+
+============================================================
+15. TROUBLESHOOTING
+============================================================
+Ping fails:
+- Wrong management IP/mask.
+- VLAN interface down.
+- No active switch port in VLAN.
+- Wrong PC subnet/gateway.
+- Missing switch ip default-gateway for remote subnet access.
+
+Telnet says connection closed/refused:
+- VTY login/password not configured.
+- transport input telnet missing/disabled.
+
+SSH does not work:
+- RSA keys not generated.
+- Hostname/domain missing before key generation.
+- No local username.
+- login local missing.
+- transport input ssh missing.
+- Client using wrong target IP.
+
+============================================================
+16. QUICK REVISION
+============================================================
+Management IP = switch VLAN interface IP used to remotely reach switch.
+VTY = remote CLI lines.
+Telnet = unencrypted remote CLI, port 23.
+SSH = encrypted remote CLI, port 22.
+login local = use local username/secret.
+transport input ssh = allow only SSH.
+ssh -l USER IP = connect to target device using USER.
